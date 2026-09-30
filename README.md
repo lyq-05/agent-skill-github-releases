@@ -1,9 +1,15 @@
-# dsh-skill-github-releases
+# agent-skill-github-releases
 
-> 一个 DSH 技能（Skill）：**把闭源项目发到 GitHub** —— 源码留本地私有，
+> 一个 **Agent Skill**：**把闭源项目发到 GitHub** —— 源码留本地私有，
 > 公开仓库只放说明文档、界面截图、版本历史和安装包。
 
-给那些"想给别人用、但不想公开源码"的项目的发布流程规范。
+给那些「想给别人用、但不想公开源码」的项目的发布流程规范。
+
+> **不是某个客户端专用的技能。** 这是 [Agent Skills](https://agentskills.io) 开放标准 ——
+> 由 Anthropic 提出并开源，目前有 **45+ 个 Agent 产品**支持，包括
+> Claude Code、ChatGPT & Codex、Cursor、GitHub Copilot、VS Code、Gemini CLI、
+> JetBrains 系、TRAE、OpenCode、Goose、Amp、Roo Code、Kiro、Tabnine 等。
+> 按同一套规范写，**一次写好，任何支持该标准的客户端都能用**。
 
 ---
 
@@ -19,7 +25,7 @@
 
 ## 安装
 
-### 方式一：装成 DSH 技能（推荐，装一次所有项目都能用）
+### 方式一：装成 Agent Skill（推荐，装一次所有项目都能用）
 
 把仓库里的 `SKILL.md` 放进任一技能根目录：
 

@@ -339,19 +339,41 @@ git tag -a v1.0.0 -m "源码 v1.0.0"
 ```powershell
 cd <projectRoot>
 git remote add origin https://github.com/<owner>/<repo>.git
-
-# ★ 有代理/加速器时 HTTP/2 常连不上，强制 HTTP/1.1
-git config http.version HTTP/1.1
-
 git push -u origin main
 git push origin --tags
 ```
 
-**如果推送报 `Recv failure: Connection was reset` 或 `Could not connect to server`**：
+**推送失败怎么排查 —— 按这个顺序，不要跳步**
 
-- 先 `curl.exe -sS -o NUL -w "%{http_code}" https://github.com` 确认网络本身通
-- 通了还推不上，就是 HTTP/2 的问题，执行上面那条 `http.version`
-- 域名解析到 `198.18.x.x` 之类的地址是正常的（代理软件的 fake-IP 段）
+**第一步：先看代理软件开着没有。这是最常见的原因。**
+
+```powershell
+Resolve-DnsName github.com -Type A          # 解析出来是 198.18.x.x 吗？
+Test-NetConnection 127.0.0.1 -Port 7897     # 代理端口在监听吗？（7890 也常见）
+```
+
+- 解析成 `198.18.x.x` / `2001:2::x` = 机器上装了 Clash / Surge 这类代理工具，
+  它把 GitHub 的域名**接管成了自己的"假 IP"段**。
+- **代理没开的时候，这些假 IP 哪儿也不通** —— 表现就是"域名能解析、连接却被重置"。
+- 最典型的场景：**为了下载文件临时关了代理，之后忘了开回来**。
+- 处理：把代理打开，重试即可。
+
+**第二步：确认网络本身通**
+
+```powershell
+curl.exe -sS -o NUL -w "%{http_code}" --max-time 30 https://github.com
+```
+
+**第三步：以上都正常还失败，才考虑 HTTP/1.1 兜底**
+
+```powershell
+git config http.version HTTP/1.1
+```
+
+> ⚠️ **不要一上来就改这个，更不要把它当成"代理环境下的通病"。**
+> 实测：代理正常时 **HTTP/2 工作完全正常**（`git -c http.version=HTTP/2 ls-remote` 返回 0）。
+> 把它归因成 HTTP/2 问题是**错误归因** —— 会让你忽略真正的原因（代理没开），
+> 下次换个项目还会踩同一个坑。
 
 ### 8. 建 Release 并上传产物
 
@@ -447,7 +469,7 @@ https://github.com/<owner>/<repo>/releases/download/<tag>/<文件名>
 | 现象 | 原因 | 处理 |
 | --- | --- | --- |
 | 附件名变成 `_v1.0.0.apk` | GitHub 剥掉非 ASCII 字符 | 产物一律用 ASCII 文件名 |
-| `git push` 报连接重置 | 代理环境下 HTTP/2 不通 | `git config http.version HTTP/1.1` |
+| `git push` 报 `Connection was reset` / `Could not connect to server` | **代理软件没开**，不是 HTTP/2 的问题。装了 Clash / Surge 这类工具后 `github.com` 会被解析成假 IP（`198.18.x.x`），代理不开时这些地址哪儿也不通 | 见「步骤 7 · 推送失败怎么排查」 |
 | 建 Release 返回 400 | `Get-Content -Raw` 的 ETS 属性污染了 JSON | 改用 `[System.IO.File]::ReadAllText` |
 | 上传大文件中断 | curl 默认超时太短 | `--max-time 1800` |
 | README 下载链接点开是 Releases 页 | 写成了 `releases/latest` 页面链接 | 改成 `releases/download/<tag>/<文件>` 直链 |
