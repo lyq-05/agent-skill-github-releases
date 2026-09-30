@@ -1,6 +1,6 @@
 ---
 name: github-releases-private-source
-description: 把闭源项目发到 GitHub —— 源码留本地私有，公开仓库只放说明文档、界面截图、版本历史和安装包，让外人能了解项目全貌并直接下载安装程序。适用于多平台（Android / iOS / Windows / macOS / Linux）的多产物发布。当用户提到「上传到 GitHub 但不想公开源码」「做个下载页」「发 Release」「版本说明」「安装包」「开源但源码私有」时使用本 skill。
+description: 上传项目到 GitHub 但不想公开源码时使用 —— 公开仓库只放 README、界面截图、版本说明和安装包，源码留本地私有仓库。也适用于「做个下载页」「发 Release」「写版本说明」「多平台安装包」（Windows / macOS / Linux / Android / iOS）。不适用于本来就打算开源、或要上架应用商店的项目。
 ---
 
 # 闭源项目的 GitHub 发布仓库

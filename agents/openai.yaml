@@ -1,0 +1,16 @@
+# Codex / ChatGPT 桌面端的外观与调用策略
+#
+# 这个文件是可选的 —— 没有它技能照样能用（DSH 就完全忽略它）。
+# 加上它，在 Codex / ChatGPT 桌面端的技能列表里会显示得更清楚。
+# 规范见 https://developers.openai.com/codex/skills
+
+interface:
+  display_name: "闭源项目发 GitHub"
+  short_description: "源码留本地私有，公开仓库只放说明和安装包"
+  brand_color: "#2F6E6A"
+  default_prompt: "把这个项目发到 GitHub，但源码不要公开"
+
+# 允许 AI 在任务匹配时自动调用（默认就是 true）。
+# 改成 false 的话，只有你显式 $github-releases-private-source 才会触发。
+policy:
+  allow_implicit_invocation: true

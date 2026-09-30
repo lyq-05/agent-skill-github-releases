@@ -23,16 +23,21 @@
 
 把仓库里的 `SKILL.md` 放进任一技能根目录：
 
-| 作用域 | 路径 | 优先级 |
-| --- | --- | --- |
-| 当前项目 | `<项目根>/.dsh/skills/github-releases-private-source/SKILL.md` | 100 |
-| 当前项目 | `<项目根>/.agents/skills/github-releases-private-source/SKILL.md` | 200 |
-| **所有项目** | **`~/.dsh/skills/github-releases-private-source/SKILL.md`** | **400** |
-| **所有项目** | **`~/.agents/skills/github-releases-private-source/SKILL.md`** | **500** |
+| 客户端 | 作用域 | 路径 | 优先级 |
+| --- | --- | --- | --- |
+| DSH | 当前项目 | `<项目根>/.dsh/skills/github-releases-private-source/` | 100 |
+| DSH | 当前项目 | `<项目根>/.agents/skills/github-releases-private-source/` | 200 |
+| DSH | **所有项目** | `~/.dsh/skills/github-releases-private-source/` | 400 |
+| DSH | **所有项目** | **`~/.agents/skills/github-releases-private-source/`** | 500 |
+| Codex | **所有项目** | **`~/.agents/skills/github-releases-private-source/`**（`$HOME/.agents/skills`） | — |
+| Codex | 当前仓库 | `<仓库根>/.agents/skills/github-releases-private-source/` | — |
 
-Windows 上 `~` 是 `C:\Users\<你的用户名>`。
+Windows 上 `~` / `$HOME` 是 `C:\Users\<你的用户名>`。
 
-装好后 DSH **立刻就能识别**（无需重启），技能目录里会出现 `github-releases-private-source`。
+> **装一次，两个客户端都能用** —— DSH 的用户级路径和 Codex 的用户级路径是**同一个目录**
+> （`~/.agents/skills`）。放进那里，DSH 和 Codex 都会自动识别。
+
+装好后**两边都立刻生效**（不需要重启），技能列表里会出现 `github-releases-private-source`。
 
 ### 方式二：给别的 AI 读（不装，直接读文件）
 
