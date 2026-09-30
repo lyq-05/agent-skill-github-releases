@@ -1,0 +1,5 @@
+﻿# 过程文件
+*.log
+tmp/
+.DS_Store
+Thumbs.db
