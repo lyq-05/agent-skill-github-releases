@@ -1,6 +1,6 @@
 ---
 name: github-releases-private-source
-description: 上传项目到 GitHub 但不想公开源码时使用 —— 公开仓库只放 README、界面截图、版本说明和安装包，源码留本地私有仓库。也适用于「做个下载页」「发 Release」「写版本说明」「多平台安装包」（Windows / macOS / Linux / Android / iOS）。不适用于本来就打算开源、或要上架应用商店的项目。
+description: 上传项目到 GitHub 但不想公开源码时使用 —— 公开仓库只放 README、界面截图、版本说明和安装包，源码留本地，可额外备份到独立 GitHub 私有仓库。也适用于「做个下载页」「发 Release」「写版本说明」「多平台安装包」（Windows / macOS / Linux / Android / iOS）。不适用于本来就打算开源、或要上架应用商店的项目。
 ---
 
 # 闭源项目的 GitHub 发布仓库
@@ -19,13 +19,15 @@ Releases 要能被外人下载，仓库就必须是 Public —— 可源码一�
 
 根目录的 `.gitignore` 把源码目录排除掉，两个仓库互不干扰。
 
+如果现有项目根本身就是完整源码工程，优先保持开发目录不变，另建独立公开发布目录。源码仓库应包含重建项目需要的代码、资源、测试和构建脚本，不应只备份 `app/` 而漏掉根目录构建文件。两种布局都必须保证公开仓库不包含源码。
+
 > 别把源码放进公开仓库再靠"以后删掉" —— git 历史里删不干净。
 
 ---
 
 ## 第 0 步：动手前先问清三件事
 
-不要自己猜，直接问用户。**平台数量决定后面所有模板的写法**。
+先从会话和项目核实以下信息，只询问仍缺失的部分，不重复询问已确认事项。**平台数量决定后面所有模板的写法**。
 
 1. **目标仓库**：`<owner>/<repo>` 叫什么？已经在 GitHub 上建好了吗？
 2. **有哪些平台、每个平台产出什么文件**？例如：
@@ -37,6 +39,8 @@ Releases 要能被外人下载，仓库就必须是 Public —— 可源码一�
 3. **源码放哪个子目录**？项目根就是源码根，还是嵌套一层？
 
 如果用户只有一个平台、一个产物，照常做 —— 模板里的多平台表格退化成一行即可。
+
+另外，若会话尚未确定源码备份方式，简短询问是否需要**额外备份到 GitHub 私有仓库**：它提供异地恢复和协作能力，本地 Git 只能保留本机版本历史。该步骤可选，不阻塞已授权的公开发布；用户已同意或拒绝时不重复询问。用户仅询问优势不等于授权上传源码。
 
 ---
 
@@ -81,13 +85,13 @@ myapp-v2.0.0-linux-x86_64.AppImage
 
 ### 1. 在 GitHub 上建空仓库
 
-必须由用户在网页上建（AI 通常没有建仓库的权限）：
+先检查用户指定的仓库是否已存在，以及当前 GitHub 登录账号是否有写入权限。已有仓库直接复用，不覆盖已有历史。
 
-1. https://github.com/new
-2. Repository name 填仓库名
-3. 选 **Public**（要给别人下载就必须 Public）
-4. **不要**勾选 Add a README / .gitignore / license（会和本地冲突）
-5. Create repository
+用户已授权创建或上传项目，且仓库名、所属账号与可见性已明确时，优先使用可用的 GitHub 工具、`gh` 或 API 创建仓库，不要求用户手动建仓。创建公开下载仓库时设为 Public；源码远程备份必须明确使用另一个 Private 仓库，公开发布授权不自动包含私有源码上传。
+
+若创建请求结果不明确，先查询目标仓库确认结果，避免重复创建。仅在未登录、缺少创建权限或需要用户完成账号验证时，请用户完成必要操作，并说明具体原因；不要在聊天中索取 token。
+
+需要网页兜底时，提供 https://github.com/new，填写已确认的仓库名和可见性，创建空仓库，不勾选 README、.gitignore 或 License。用户已确认的选择无需反复询问。
 
 ### 2. 写 `.gitignore` —— 这一步决定源码会不会泄漏
 
@@ -135,177 +139,11 @@ tmp/
 
 > `.gitignore` 里 `!` 放行的规则，**父目录本身不能被排除**，否则放行无效。
 
-### 3. 写 README.md（项目门面）
+### 3–5. 编写项目主页、版本历史与 Release 正文
 
-用这个骨架，按平台数量增删表格行：
+创建或重排发布材料前，必须阅读 [GitHub 展示规范](references/presentation.md)。它完整定义了用户偏好的展示格式，包括居中徽章与宣传语、下载与截图表格、功能与权限说明、版本主题简表、逐版详细说明和 Release 模板；不需要再访问客脉图作为参考。
 
-````markdown
-# <项目名>
-
-<p align="center">
-  <a href="https://github.com/<owner>/<repo>/releases"><img alt="版本" src="https://img.shields.io/github/v/release/<owner>/<repo>?label=%E7%89%88%E6%9C%AC&color=blue"></a>
-  <a href="https://github.com/<owner>/<repo>/releases"><img alt="总下载" src="https://img.shields.io/github/downloads/<owner>/<repo>/total?label=%E6%80%BB%E4%B8%8B%E8%BD%BD&color=brightgreen"></a>
-  <img alt="平台" src="https://img.shields.io/badge/%E5%B9%B3%E5%8F%B0-Windows%20%7C%20macOS%20%7C%20Android-3DDC84">
-</p>
-
-<p align="center">
-  <b><一句话卖点></b><br>
-  <一句话补充说明>
-</p>
-
----
-
-一个 <一句话说清是什么>。<关键特性一句话>
-
-> **当前版本 v1.0.0（YYYY-MM-DD 发布）**：<一句话主题>。
-> <两三句说清这版最大的变化>
-> 逐项说明见 **[v1.0.0 发布说明](docs/RELEASE_v1.0.0.md)**，完整历史见 **[CHANGELOG](CHANGELOG.md)**。
-
----
-
-## 下载
-
-| 平台 | 安装包 | 大小 | 说明 |
-| :---: | --- | :---: | --- |
-| Windows | **⬇ [myapp-v1.0.0-windows-x64-setup.exe](https://github.com/<owner>/<repo>/releases/download/v1.0.0/myapp-v1.0.0-windows-x64-setup.exe)** | 132 MB | 点文件名**直接开始下载** |
-| macOS（Apple 芯片） | **⬇ [myapp-v1.0.0-macos-arm64.dmg](...)** | 149 MB | 首次打开需右键→打开 |
-| macOS（Intel） | **⬇ [myapp-v1.0.0-macos-x64.dmg](...)** | 151 MB | 同上 |
-| Android 8.0+ | **⬇ [myapp-v1.0.0.apk](...)** | 11 MB | 点文件名**直接开始下载** |
-
-> 想看历史版本、以及每个版本具体改了什么 → **[前往 Releases 页面](https://github.com/<owner>/<repo>/releases)**
-
-**安装步骤**
-
-<按平台分条写，每个平台 3-5 步，要具体到点哪里>
-
----
-
-## 界面
-
-| <功能1> | <功能2> | <功能3> |
-| :---: | :---: | :---: |
-| ![功能1](docs/screenshots/01-功能1.png) | ![功能2](docs/screenshots/02-功能2.png) | ![功能3](docs/screenshots/03-功能3.png) |
-
----
-
-## 功能
-
-<分类分表格列，每条一句话说清"做了什么、有什么用">
-
----
-
-## 常见问题
-
-**Q：<用户最可能踩的坑>？**
-A：<直说，不要绕>
-
----
-
-## 版本历史
-
-见 **[CHANGELOG.md](CHANGELOG.md)**。
-
----
-
-## 说明
-
-- 本项目为**个人项目**，暂不公开源码
-- <数据/隐私相关的一句话承诺>
-````
-
-**下载区那两行是关键**（见下方「直链」一节）：文件名是**直链**，点下去直接下载；
-Releases 页面单独给一个链接，只管"看历史版本"。
-
-### 4. 写 CHANGELOG.md
-
-倒序，最新的在最上面。每版分「新增 / 优化 / 修复」三节：
-
-```markdown
-# 版本历史
-
-## [v1.0.1] — <一句话主题>
-
-### 修复
-
-- **<问题描述>**：<根因是什么> → <怎么修的>
-
-### 优化
-
-- <改了什么，为什么>
-
----
-
-## [v1.0.0] — 首个版本
-
-- <功能清单>
-```
-
-> **写根因，不要只写"修了 bug"**。"修了闪退问题"没有价值；
-> "空列表时数组越界导致闪退，已加空判断"才有价值 —— 半年后的自己能看懂。
-
-### 5. 写 `docs/RELEASE_vX.Y.Z.md`（Release 正文）
-
-用这个结构：
-
-````markdown
-# <项目名> v1.0.1
-
-> **<一句话主题>**
-
-**发布类型**：修复 / 功能更新 / 重大更新
-**上一版本**：v1.0.0
-**系统要求**：<各平台最低要求>
-
----
-
-## 📦 下载
-
-| 平台 | 安装包 | 大小 | 说明 |
-| --- | --- | --- | --- |
-<和 README 的下载表一致>
-
----
-
-## ⚠️ 升级说明
-
-- **直接覆盖安装即可**，数据不会丢
-- <要不要先卸载、要不要迁移数据、有没有不兼容变更>
-
----
-
-## 🚀 本次更新
-
-### 新增
-### 优化
-### 修复
-
-<每条写清：现象 → 根因 → 处理>
-
----
-
-## 🚨 已知问题
-
-<诚实列出。写清楚"这是系统限制"还是"还没做">
-
----
-
-## 📱 界面
-
-| <变化前> | <变化后> |
-| :---: | :---: |
-| ![前](https://raw.githubusercontent.com/<owner>/<repo>/main/docs/screenshots/xx.png) | ![后](...) |
-
----
-
-## 🔗 相关链接
-
-- [完整变更历史](https://github.com/<owner>/<repo>/blob/main/CHANGELOG.md)
-- [项目首页](https://github.com/<owner>/<repo>)
-- [上一版 v1.0.0](https://github.com/<owner>/<repo>/releases/tag/v1.0.0)
-````
-
-> Release 正文里的图片**必须用绝对 URL**（`raw.githubusercontent.com/...`），
-> 因为 Release 页面不在仓库文件树里，相对路径找不到图。
+按该规范生成 README.md、CHANGELOG.md 和 docs/RELEASE_v版本.md。旧安装包缺失时保留能核实的更新说明，不编造下载链接；所有事实、平台、数据行为和版本状态按当前项目调整。徽章也属于交付内容，必须检查 GitHub 图片代理实际加载，不能只验证 Shields 源站。
 
 ### 6. 初始化两个 git 仓库
 
@@ -331,10 +169,22 @@ git init -b main
 git add -A
 git commit -m "<项目名> 源码 v1.0.0"
 git tag -a v1.0.0 -m "源码 v1.0.0"
-# 先不配 remote，将来要开源再加
+# 未授权远程源码备份时不配 remote；已授权则按下一节配置独立 Private 仓库
 ```
 
-### 7. 推送
+### 6.1 可选：额外备份到 GitHub 私有远程仓库
+
+用户明确同意后执行。默认可采用同账号下的 `<公开仓库名>-source`，先说明实际使用的名字；用户指定名字时按其要求。
+
+1. **确定范围与历史**：检查源码仓库状态、已有 remote 和提交历史。备份代码、资源、测试、构建脚本和开发文档；排除签名密钥、token、`.env`、本机配置、构建缓存、模拟器、安装包和用户私人样张。检查即将推送的历史，不只是当前工作目录；发现凭据时先处理，不能仅靠新增 `.gitignore` 隐藏历史中的秘密。签名密钥应另行安全备份，不放入源码仓库。
+2. **创建或复用 Private 仓库**：先查询目标是否存在。新建时明确传 `private: true`，随后重新读取仓库属性，确认账号、名称及私有属性无误再推送。若同名仓库是 Public，不向其推送源码，也不擅自修改可见性；先与用户确认处理方式。已有非空仓库先核对用途和历史，禁止用强制推送覆盖。
+3. **配置独立 remote**：只在源码仓库配置私有远程地址，不能使用公开发布仓库的 remote。已有 `origin` 时不擅自替换；可另加明确命名的备份 remote。提交已确认的源码快照，推送目标分支和对应版本标签，不盲目使用 `--mirror` 或推送所有分支。
+4. **验证结果**：重新确认 GitHub 仓库仍为 Private；核对远程分支提交 SHA 与本地一致、版本标签指向正确，检查远程文件清单包含所需源码且没有排除项。公开仓库应继续只包含发布材料。
+5. **交付说明**：提供私有仓库链接、备份版本及验证结果，说明密钥和本机环境未包含。明确这只是当前快照；后续修改需要提交并推送才会同步，不要声称已经开启自动备份。
+
+创建或推送返回超时时，先查询远程仓库和引用确认是否已经成功，再决定重试。登录或权限受限时说明实际阻碍，不索取用户在聊天中粘贴凭据。
+
+### 7. 推送公开发布仓库
 
 ```powershell
 cd <projectRoot>
@@ -345,7 +195,7 @@ git push origin --tags
 
 **推送失败怎么排查 —— 按这个顺序，不要跳步**
 
-**第一步：先看代理软件开着没有。这是最常见的原因。**
+**第一步：检查实际网络环境。只有使用代理时才检查代理状态，不预设失败原因。**
 
 ```powershell
 Resolve-DnsName github.com -Type A          # 解析出来是 198.18.x.x 吗？
@@ -392,7 +242,7 @@ git config http.version HTTP/1.1
 # ---- 取凭据（绝不打印内容）----
 $lines = "protocol=https`nhost=github.com`n`n" | git credential fill 2>$null
 $tok = (($lines | Where-Object { $_ -like "password=*" }) -replace "^password=","") -join ""
-if (-not $tok) { throw "没有可用凭据，让用户生成一个 Personal Access Token（勾 repo 权限）" }
+if (-not $tok) { throw "没有可用凭据，请用户通过 gh auth login 或客户端登录完成认证；不要在聊天中索取 token" }
 
 $H = @("-H","Authorization: Bearer $tok",
        "-H","Accept: application/vnd.github+json",
@@ -470,6 +320,7 @@ https://github.com/<owner>/<repo>/releases/download/<tag>/<文件名>
 - [ ] README、CHANGELOG、RELEASE 说明里的版本号**三处一致**
 - [ ] Release 正文里的图片用**绝对 URL**，在 Release 页面能正常显示
 - [ ] 仓库里**没有** API token、密钥、`.env`、个人隐私数据
+- [ ] 若执行了源码远程备份：目标仓库确认为 Private，分支 SHA 和版本标签与本地一致，公开仓库没有混入源码；未授权时没有额外上传源码
 
 ---
 
@@ -478,7 +329,7 @@ https://github.com/<owner>/<repo>/releases/download/<tag>/<文件名>
 | 现象 | 原因 | 处理 |
 | --- | --- | --- |
 | 附件名变成 `_v1.0.0.apk` | GitHub 剥掉非 ASCII 字符 | 产物一律用 ASCII 文件名 |
-| `git push` 报 `Connection was reset` / `Could not connect to server` | **代理软件没开**，不是 HTTP/2 的问题。装了 Clash / Surge 这类工具后 `github.com` 会被解析成假 IP（`198.18.x.x`），代理不开时这些地址哪儿也不通 | 见「步骤 7 · 推送失败怎么排查」 |
+| `git push` 报 `Connection was reset` / `Could not connect to server` | 先排查网络和已配置的代理；假 IP 且代理未运行是一种已遇到的原因，不能凭同一报错断定根因 | 见「步骤 7 · 推送失败怎么排查」 |
 | 建 Release 返回 400 | `Get-Content -Raw` 的 ETS 属性污染了 JSON | 改用 `[System.IO.File]::ReadAllText` |
 | 上传大文件中断 | curl 默认超时太短 | `--max-time 1800` |
 | README 下载链接点开是 Releases 页 | 写成了 `releases/latest` 页面链接 | 改成 `releases/download/<tag>/<文件>` 直链 |

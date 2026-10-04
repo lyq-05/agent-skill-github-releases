@@ -1,128 +1,105 @@
-# agent-skill-github-releases
+# 闭源项目发 GitHub
 
-> 一个 **Agent Skill**：**把闭源项目发到 GitHub** —— 源码留本地私有，
-> 公开仓库只放说明文档、界面截图、版本历史和安装包。
+一个可复用的 Agent Skill：**公开展示与下载，源码保持私有。**
 
-给那些「想给别人用、但不想公开源码」的项目的发布流程规范。
+公开仓库只放 README、截图、版本说明和安装包；源码留在本地，也可经用户明确同意备份到独立 GitHub 私有仓库。支持多平台，按项目实际产物调整。
 
-> **不是某个客户端专用的技能。** 这是 [Agent Skills](https://agentskills.io) 开放标准 ——
-> 由 Anthropic 提出并开源，目前有 **45+ 个 Agent 产品**支持，包括
-> Claude Code、ChatGPT & Codex、Cursor、GitHub Copilot、VS Code、Gemini CLI、
-> JetBrains 系、TRAE、OpenCode、Goose、Amp、Roo Code、Kiro、Tabnine 等。
-> 按同一套规范写，**一次写好，任何支持该标准的客户端都能用**。
+## 展示格式已内置
 
----
+无需再给 AI 找参考项目。技能内置以下展示格式：
 
-## 它解决什么问题
+| 区域 | 默认展示 |
+| --- | --- |
+| 页首 | 应用名、居中徽章、宣传语与产品简介 |
+| 下载 | 平台、带版本标签的附件直链、真实包大小、安装与升级步骤 |
+| 界面 | 2～3 列功能截图表格，只用虚构示例数据 |
+| 功能 | 按用户场景分组的功能表、权限与数据说明、常见问题 |
+| 版本历史 | 倒序“版本／主题”简表与完整 CHANGELOG |
+| Release | 更新主题、下载、升级说明、具体变化、截图、验证与已知问题 |
 
-想发到 GitHub 给别人下载，Releases 就必须在 **Public** 仓库里；
-可源码一起传上去，就违背了"不公开源码"的初衷。
-
-这个技能给出一套完整做法：**拆成两个仓库** ——
-公开的发布仓库（说明 + 截图 + 安装包）+ 私有的源码仓库，互不干扰。
-
----
+历史安装包丢失时仍保留能核实的说明，不制造失效下载链接。规范还包含中文徽章参数编码、预发布版本显示与 GitHub 图片代理检查。
 
 ## 安装
 
-### 方式一：装成 Agent Skill（推荐，装一次所有项目都能用）
+**安装完整技能目录，不要只复制 SKILL.md。** 引用的展示规范是必需文件；agents/openai.yaml 是可选的客户端元数据。
 
-把仓库里的 `SKILL.md` 放进任一技能根目录：
-
-| 客户端 | 作用域 | 路径 | 优先级 |
-| --- | --- | --- | --- |
-| DSH | 当前项目 | `<项目根>/.dsh/skills/github-releases-private-source/` | 100 |
-| DSH | 当前项目 | `<项目根>/.agents/skills/github-releases-private-source/` | 200 |
-| DSH | **所有项目** | `~/.dsh/skills/github-releases-private-source/` | 400 |
-| DSH | **所有项目** | **`~/.agents/skills/github-releases-private-source/`** | 500 |
-| Codex | **所有项目** | **`~/.agents/skills/github-releases-private-source/`**（`$HOME/.agents/skills`） | — |
-| Codex | 当前仓库 | `<仓库根>/.agents/skills/github-releases-private-source/` | — |
-
-Windows 上 `~` / `$HOME` 是 `C:\Users\<你的用户名>`。
-
-> **装一次，两个客户端都能用** —— DSH 的用户级路径和 Codex 的用户级路径是**同一个目录**
-> （`~/.agents/skills`）。放进那里，DSH 和 Codex 都会自动识别。
-
-装好后**两边都立刻生效**（不需要重启），技能列表里会出现 `github-releases-private-source`。
-
-### 方式二：给别的 AI 读（不装，直接读文件）
-
-把这条链接发给它，并说"读一下这个，按里面的流程做"：
-
-```
-https://raw.githubusercontent.com/lyq-05/dsh-skill-github-releases/main/SKILL.md
+```text
+github-releases-private-source/
+├── SKILL.md
+├── references/
+│   └── presentation.md
+└── agents/
+    └── openai.yaml
 ```
 
-**注意用 `raw.githubusercontent.com` 而不是 `github.com`**：
+将目录放入客户端支持的技能位置。以下以 ~/.agents/skills 为例；使用其他目录的客户端请替换安装路径。
 
-| 链接形式 | 返回什么 | 适不适合 AI |
-| --- | --- | --- |
-| `github.com/.../blob/main/SKILL.md` | 一整页 HTML（正文夹在里面） | 能用，但要先剥壳 |
-| **`raw.githubusercontent.com/.../main/SKILL.md`** | **纯 Markdown 文本** | **直接可用** |
+**Windows PowerShell：首次安装**
 
-三个前提，缺一不可：
+```powershell
+$skillRoot = Join-Path $HOME '.agents/skills'
+New-Item -ItemType Directory -Force $skillRoot | Out-Null
+git clone https://github.com/lyq-05/agent-skill-github-releases.git (Join-Path $skillRoot 'github-releases-private-source')
+```
 
-1. 那个 AI **有联网能力**（不能联网就只能把文件直接给它）
-2. 它**支持读网页/文件**（能 fetch URL）
-3. 你得**明确告诉它去读** —— 它不会自己发现这个链接
+**macOS / Linux：首次安装**
 
-> 这种方式的效果是"**照着流程做**"，而不是"**装了一个技能**"。
-> 区别：装成技能后，AI 会在合适的时机**自动想起来用它**；
-> 只给链接的话，每次都得你提醒一句。
+```bash
+mkdir -p ~/.agents/skills
+git clone https://github.com/lyq-05/agent-skill-github-releases.git ~/.agents/skills/github-releases-private-source
+```
 
-### 方式三：直接拷文件
+目标目录已存在时先检查其来源和本地改动，不覆盖或删除。也可下载仓库 ZIP，把完整目录命名为 github-releases-private-source 后安装。
 
-把 `SKILL.md` 下载下来，塞进对方项目的 `.dsh/skills/` 下即可。
+不同客户端的发现和刷新方式可能不同。安装后检查技能列表，必要时刷新客户端或开启新会话；已有会话可能仍保留之前读入的版本。
 
----
+## 更新到其他电脑
 
-## 里面有什么
+GitHub main 分支是远程版本。本地修改不会自动上传，另一台电脑已有的安装也不会自动更新。
 
-单个 `SKILL.md`，一份自包含的流程规范：
+Git 克隆安装可在技能目录执行：
 
-| 章节 | 内容 |
-| --- | --- |
-| 双仓库结构 | 公开仓库 vs 私有源码仓库怎么分 |
-| 动手前要问的三件事 | 目标仓库、**有哪些平台**、源码放哪 |
-| 目录骨架 | README / CHANGELOG / docs / releases 怎么摆 |
-| **产物命名规范** | 多平台多产物的 ASCII 命名法 |
-| README 模板 | 含多平台下载表格、徽章、FAQ |
-| CHANGELOG 模板 | 倒序 + 新增/优化/修复三节 |
-| Release 正文模板 | 下载 / 升级说明 / 本次更新 / 已知问题 / 界面 |
-| 完整命令 | 建仓库、双 git init、推送、用 API 建 Release 并上传产物 |
-| 收尾自检清单 | 8 条，逐条过 |
-| 常见坑表 | 7 个真实踩过的坑及处理 |
+```bash
+git status --short
+git pull --ff-only
+```
 
-**多平台是内置的**，不是只针对安卓：Windows / macOS（区分 Intel 与 Apple Silicon）/
-Linux / Android / iOS 的产物类型、命名、安装说明差异都覆盖到了。
-只有一个平台时，模板里的表格退化成一行即可。
+有本地修改时先保留并合并，不用强制重置。ZIP 安装则重新下载完整目录，保留自己的修改后更新。之后让 AI 重新读取技能及展示规范。
 
----
+## 使用
 
-## 它从哪来
+在客户端选择 github-releases-private-source，或者明确说：
 
-这套流程不是凭空写的，是在一个真实项目上跑通之后提炼的
-（`kemai-tu`：Android 应用，公开仓库放说明和安装包、源码仓库私有私有），
-把过程中**实际踩过的坑**都记进去了，例如：
+> 使用 github-releases-private-source，把这个项目发布到 GitHub，公开下载但不公开源码。采用技能内置的完整展示格式。
 
-- GitHub 的 Release 附件名**会剥掉非 ASCII 字符**（中文名传上去变成 `_v1.0.0.apk`）
-- 代理环境下 `git push` 报连接重置 → 需要 `git config http.version HTTP/1.1`
-- PowerShell 的 `Get-Content -Raw` 会给字符串挂 ETS 属性，导致 JSON 请求体被污染
-- `releases/latest/download/<文件>` 这种"永远指向最新版"的写法，下一版文件名一变就 404
+不安装时，也可以把这两份链接交给有联网读取能力的 AI：
 
----
+- [SKILL.md 原文](https://raw.githubusercontent.com/lyq-05/agent-skill-github-releases/main/SKILL.md)
+- [展示规范原文](https://raw.githubusercontent.com/lyq-05/agent-skill-github-releases/main/references/presentation.md)
 
-## 适用与不适用
+这是临时读取流程，不等于安装。AI 需要同时读取入口与引用规范。
 
-**适用**：个人项目 / 小团队项目，想给别人下载用，但暂时不打算开源。
+## 发布与源码边界
 
-**不适用**：
-- 本来就打算开源的 → 直接一个仓库就行，不需要拆
-- 要上架应用商店的 → 商店有自己的发布流程
-- 需要 CI 自动构建的 → 这份文档只覆盖手动发布流程
+- 完整源码工程保持原位，优先另建独立公开发布目录。
+- 公开仓库不包含源码、密钥、真实账单、私人样张或本机环境。
+- 源码备份使用独立 Private 仓库，先核实私有属性再推送。
+- 公开发布授权不自动包含源码上传授权。
+- 使用客户端登录或凭据管理器，不要求在聊天中粘贴 token。
+- 发布后检查远程提交、附件下载、图片代理与 README，不把本地写入成功当作线上已生效。
 
----
+## 最近完善
+
+- 内置统一展示规范，不再依赖外部参考项目。
+- 补齐徽章编码和 GitHub 图片代理校验。
+- 保留历史说明，缺失附件不提供下载。
+- 修正旧仓库链接、只复制单文件的安装说明与跨客户端立即生效的承诺。
+- 网络失败先检查实际环境，不将 HTTP/1.1 当作固定修复。
+
+## 适用范围
+
+适合个人或小团队的闭源应用下载发布。已计划开源、应用商店上架或需要完整 CI 自动构建的项目，应采用相应流程；本技能不替代那些流程。
 
 ## 许可
 
-随意取用、修改、再分发。踩到新坑欢迎提 Issue 补充。
+随意取用、修改、再分发。欢迎通过 Issue 反馈实际问题。
